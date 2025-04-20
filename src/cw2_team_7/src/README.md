@@ -1,44 +1,128 @@
-# Pick-n-Place manipulation using 7-DOF Panda robot arm
+# COMP0250 Coursework 2: Tic-Tac-Toe Shape Detection, Classification, and Pick & Place Manipulation
 
-This repository contains the implementation of a robotic perception and manipulation system that detects, classifies, and manipulates shapes in a simulated Gazebo environment using a Franka Emika Panda robot arm.
+This repository contains the implementation of the three advanced tasks for Coursework 2 using ROS and C++ on the Franka Emika Panda robot arm. Building on our previous work from CW1, this solution integrates advanced perception, planning, and grasping strategies to perform:
 
-## Project Overview
+- **Task 1:** Precise pick and place operations with shape-specific grasp planning.
+- **Task 2:** Robust classification of shapes on a variable-height table.
+- **Task 3:** Detection, classification, and manipulation of shapes within a clutter environment.
 
-This project demonstrates advanced robotics capabilities through three progressively complex tasks:
+The solution uses point cloud processing with PCL, computer vision techniques with OpenCV, and robust motion planning via MoveIt. Detailed visualisations are provided, including a custom RViz configuration that shows the perception pipeline's visualisation. It adds a marker topic and disables robot models, you can find the config file inside the submission package.
 
-1. **Precision Pick and Place:** Shape-specific grasp planning of crosses and noughts (tic-tac-toe shapes) for reliable pick-n-place operations.
-2. **Adaptive Shape Classification:** Detection and classification of shape types on variable-height surface.
-3. **Cluttered Environment Navigation:** Identification and retrieval of objects in complex scenes with obstacles.
+## Authors
 
-<div align="center">
-  <img src="figures/task3.png" alt="Robot manipulating objects" width="25%">
-</div>
+- Ziya Ruso
+- Lorenzo Uttini
+- Amlan Sahoo
 
-## Key Features
+Each author contributed equally (33.33%) to all tasks and worked around 60 hours each, with extensive work on integrating perception, motion planning, and grasping into a robust execution pipeline.
 
-### Advanced Perception
+## Building the Project
 
-- Point cloud segmentation and filtering
-- 2D/3D shape classification
-- Dynamic object detection in varied environments
-- Environment-adaptive parameter tuning
+1. Clone the entire repository (COMP0250_S25_LABS) into your workspace and replace the `cw1_team_x` package with our `cw1_team_7` package.
 
-### Intelligent Manipulation
+2. **Install dependencies**
+Run the following command to install ROS and system dependencies:
 
-- Shape-specific grasp planning
-- Orientation-aware approach strategies
-- Collision-free path planning
-- Adaptive object selection in cluttered scenes
+```bash
+rosdep install --from-paths src --ignore-src -r -y
+```
 
-### Robust System Design
+3. **Build the package**
+Make sure you are inside the workspace and run:
 
-- Comprehensive error handling and recovery strategies
-- Visualizations for system monitoring
-- Dynamic parameter adjustment based on environmental conditions
+```bash
+cd ~/comp0250_s25_labs
+catkin build cw2_team_7
+```
+Alternatively, you can also build the entire workspace with `catkin build`.
 
-## Task 1: Pick and Place Shape Manipulation
+*Note*: You can ignore the `jump_threshold` parameter deprecation warning and `C++17 Structured Bindings` warning during the build (see Troubleshooting section below)
+
+4. **Source your terminal**
+After building, source your terminal to use the newly built packages:
+
+```bash
+source devel/setup.bash
+```
+
+## Running the Tasks
+
+1. Launch the **simulation environment** in one sourced terminal:
+```bash
+roslaunch cw2_team_7 run_solution.launch
+```
+
+2. Call the desired task service from another sourced terminal:
+```bash
+
+# Task 1
+rosservice call /task 1 
+
+# Task 2
+rosservice call /task 2
+
+# Task 3
+rosservice call /task 3
+```
+
+Each task is triggered via the `/task` service followed by its corresponding task number. Make sure both terminals are sourced with:
+```bash
+source devel/setup.bash
+```
+
+## Dependencies
+- **ROS Noetic** — Main middleware for robot control.
+- **MoveIt** — Motion planning framework.
+- **PCL (Point Cloud Library)** — For point cloud processing.
+- **OpenCV** — For computer vision and image processing tasks.
+- **tf2** — For handling coordinate transformations.
+- **cw2_world_spawner** — Provides custom service messages and simulation environment support.
+
+## Code Structure
+
+### Header Files
+- `include/cw2_class.h`: Header file containing class definitions and method declarations used for the tasks
+- `include/cw2_grasp.h`: Header file for grasp pose computation and gripper control
+- `include/cw2_movement.h`: Header file for motion planning
+- `include/cw2_perception.h`: Header file for perception
+
+### Source Files
+- `src/cw2_class.cpp`: Main integration of perception, motion, and grasping
+- `src/cw2_grasp.cpp`: Implementation of grasp pose computation and gripper control functions
+- `src/cw2_movement.cpp`: Implementation of motion planning and manipulation strategies
+- `src/cw2_perception.cpp`: Implementation of point cloud processing, cluster extraction, and perception strategies
+- `src/cw2_node.cpp`: Entry point for the ROS node that initializes the CW2 class and handles service callbacks
+
+### Custom Rviz Config
+- `cw2_team_7_config.rviz`: Our custom rviz config file for better perception visualization
+
+
+## Troubleshooting & Debugging
+
+### Restart Gazebo Setup
+
+We have observed from 100+ test runs that sometimes if there's a slight failure in terms of movement planning or anything else, calling the tasks successively can result in multiple failures. Although this doesn't happen in most cases, if you start getting a string of failures one after another, please restart Gazebo completely and/or rebuild our package. This helps clear any residual states or errors, ensuring the system resets to a clean baseline. In our testing, the tasks execute precisely in the vast majority of runs.
+
+### Image Debugging
+Debug images (binary projections, orientation images) are stored in the `/src/images` folder. These images are for development purposes only and do not impact runtime functionality.
+
+### Additional RViz Setup
+A sample RViz config file is provided with already adjusted topic subscriptions and disable unnecessary visualisation topics. Refer to the config file in the repository for optimal settings.
+
+### C++17 Structured Bindings Warning
+Warning: Structured bindings are only available with -std=c++17 or -std=gnu++17. The code still compiles and works correctly because ROS Noetic's default compiler supports C++17 features even if the project is set to C++11/14.
+
+### Deprecated Parameter for MoveIt's Cartesian Planner
+The jump_threshold parameter is deprecated but the code compiles and operates correctly. The deprecation is due to improved, automatic methods for handling point cloud discontinuities that no longer require manual threshold tuning.
+
+
+# Task 1: Pick and Place Shape Manipulation
+
+## Overview
 
 Task 1 focuses on basic pick and place operations with precise object manipulation. The robot receives coordinates for a shape (cross or nought) and a goal location, and must successfully grasp the object and place it in the designated target position while maintaining stable orientation throughout the movement.
+
+## Implementation Approach
 
 ### 1. Observation and Object Detection
 
@@ -79,26 +163,50 @@ Multiple strategies ensure reliable task completion:
 - **Adaptive Parameters**: Adjusts grasp and movement parameters based on object properties
 - **Visualisation Tools**: Real-time visualisation of planned grasp poses for monitoring
 
-### Results
+## Results
 
 The system detects and analyzes objects precisely, determines optimal grasp points, and executes smooth pick-and-place operations.
 
-<div align="center">
-  <img src="figures/task1_2.png" alt="Task 1" width="45%">
-  <p><em>The following figure represents an example of Task 1 while the robot is transporting the object to basket.</em></p>
-</div>
-
-### Key Parameters
+## Key Parameters
 
 - **Observation Height**: 0.7m - Optimal camera position for object detection
 - **Pre-grasp Offset**: 0.125m - Pre-grasp height offset above object pose for approach
 - **Lift Height**: 0.6m - Safe height for transporting objects
 - **Drop Height**: 0.4m - Appropriate height for object release
 
+## Future Improvements
+
+- Integration of force feedback for adaptive grasping
+- More precise drop location to ensure object completely fits inside basket
+
+<div align="center">
+  <img src="figures/task1_2.png" alt="Task 1" width="45%">
+  <p><em>The following figure represents an example of Task 1 while the robot is transporting the object to basket.</em></p>
+</div>
 
 # Task 2: Shape Classification with Variable Table Height 
 
+**Important Note:** 
+
+For Task 2 to correctly compute variable table heights, the robot must be in its default 'ready' position at startup. Occasionally, Gazebo may improperly spawn the robot arm (falling to ground), preventing accurate table height calculation.
+
+Workarounds:
+
+Run and discard the first task execution, then run Task 2 again
+Alternatively, enable the commented code in the Task 2 callback (lines 315-317):
+```
+  // NOTE TO EVALUATORS: Enable this line to move robot to 'ready' position
+  // Make sure robot is in default pose
+  // cw2_movement::moveToReadyPosition(arm_group_, 30.0, 0.6, 0.6, 0.01);
+```
+
+This issue is intermittent and difficult to reproduce, so we've left this as an optional configuration.
+
+## Overview
+
 Task 2 involves the classification of shapes (noughts and crosses) placed on a variable-height table. The robot must analyze multiple reference shapes and identify which one matches the mystery shape, demonstrating robustness to environmental variations.
+
+## Implementation Approach
 
 ### 1. Dynamic Table Height Detection
 
@@ -136,9 +244,22 @@ To identify the mystery shape, the system:
 - **Feature Comparison**: Compares classification results between mystery and reference shapes
 - **Reference Indexing**: Returns the 1-based index of the matching reference shape
 
-### Results
+## Results
 
 The system adapts to table heights (0–50mm), reliably classifies shapes, identifies the matching reference, and provides detailed visualisation for robust performance under varying conditions. Appropriate responses are returned.
+
+## Key Parameters
+
+- **Table Color Detection**: RGB values around (168, 198, 168) with adaptable thresholds
+- **Height Processing**: 10th percentile filtering for robust surface detection
+- **Hole Ratio Threshold**: 0.2 for distinguishing between noughts and crosses
+- **Cluster Distance Threshold**: 0.15m for identifying clusters near target points
+
+## Future Improvements
+
+- Multi-view fusion for more reliable classification
+- Shape recognition using machine learning for greater robustness
+- 3D analysis techniques that don't require projection to 2D
 
 <div>
   <p><em>The following figure represents an example of Task2 while the robot completes scanning the scene:</em></p>
@@ -154,16 +275,13 @@ The system adapts to table heights (0–50mm), reliably classifies shapes, ident
   </div>
 </div>
 
-### Key Parameters
-
-- **Table Color Detection**: RGB values around (168, 198, 168) with adaptable thresholds
-- **Height Processing**: 10th percentile filtering for robust surface detection
-- **Hole Ratio Threshold**: 0.2 for distinguishing between noughts and crosses
-- **Cluster Distance Threshold**: 0.15m for identifying clusters near target points
-
 # Task 3: Most Common Shape Detection and Manipulation in Cluttered Environment
 
+## Overview
+
 Task 3 involves the detection, classification, and manipulation of shapes in a Tic-Tac-Toe-like cluttered environment. The robot must scan the workspace, identify objects (crosses and noughts), detect obstacles, locate the basket, and then pick one instance of the most common shape type and place it in the basket.
+
+## Implementation Approach
 
 ### 1. Environment Scanning
 
@@ -229,7 +347,7 @@ The implementation includes comprehensive visualisation for debugging:
 - **Orientation Arrows**: Displaying detected object orientations
 - **Grasp Pose Markers**: Visualisation of planned grasp positions
 
-### Results
+## Results
 
 The system successfully:
 - Detects and classifies different shapes with high accuracy
@@ -237,6 +355,17 @@ The system successfully:
 - Avoids obstacles while planning paths
 - Performs reliable pick and place operations
 - Correctly identifies and reports the most common shape type
+
+## Key Parameters
+
+- `grasp_offset`: 0.15m - Safe height for picking objects
+- `lift_height`: 0.5m - Height to lift objects above the workspace
+- `drop_height`: 0.4 - Height for releasing objects into the basket
+
+## Future Improvements
+
+- Enhanced collision checks after one instance is picked
+- Dynamic replanning based on scene
 
 <div>
   <p><em>The following figure represents an example of Task2 while the robot is nearing execution completion:</em></p>
@@ -252,157 +381,27 @@ The system successfully:
   </div>
 </div>
 
-### Key Parameters
+## License
 
-- `grasp_offset`: 0.15m - Safe height for picking objects
-- `lift_height`: 0.5m - Height to lift objects above the workspace
-- `drop_height`: 0.4 - Height for releasing objects into the basket
+MIT License
 
-## Code Structure
+Copyright (c) 2025 Ziya Ruso, Lorenzo Uttini, Amlan Sahoo
 
-### Header Files
-- `include/cw2_class.h`: Header file containing class definitions and method declarations used for the tasks
-- `include/cw2_grasp.h`: Header file for grasp pose computation and gripper control
-- `include/cw2_movement.h`: Header file for motion planning
-- `include/cw2_perception.h`: Header file for perception
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-### Source Files
-- `src/cw2_class.cpp`: Main integration of perception, motion, and grasping
-- `src/cw2_grasp.cpp`: Implementation of grasp pose computation and gripper control functions
-- `src/cw2_movement.cpp`: Implementation of motion planning and manipulation strategies
-- `src/cw2_perception.cpp`: Implementation of point cloud processing, cluster extraction, and perception strategies
-- `src/cw2_node.cpp`: Entry point for the ROS node that initializes the CW2 class and handles service callbacks
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-### Custom Rviz Config
-- `cw2_team_7_config.rviz`: Our custom rviz config file for better perception visualization
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-<!-- ## Technical Implementation
-
-### Perception Pipeline
-
-The system implements a multi-stage perception pipeline:
-1. **Environment Scanning** - Strategic positioning for optimal viewpoints
-2. **Point Cloud Processing** - Filtering, downsampling, and segmentation
-3. **Shape Analysis** - Feature extraction and classification
-4. **Grasp Planning** - Computing optimal interaction points
-
-### Motion Planning
-
-Motion execution follows a carefully designed sequence:
-1. **Pre-grasp Positioning** - Safe approach to target objects
-2. **Controlled Manipulation** - Precise grasping with shape-specific strategies
-3. **Transport Planning** - Obstacle-aware path generation
-4. **Placement Execution** - Gentle and accurate object placement -->
-
-## Results & Performance
-
-The system successfully:
-- Detects and classifies shapes with high accuracy (99% +)
-- Handles objects of varying sizes and orientations
-- Navigates cluttered environments while avoiding collisions
-- Adapts to changes in the environment (variable table heights)
-
-## Running the Project
-
-### Dependencies
-
-- ROS Noetic on Ubuntu 20.04
-- C++
-- PCL (Point Cloud Library)
-- OpenCV 
-- MoveIt framework
-- Gazebo
-```bash
-sudo apt install ros-noetic-franka-ros ros-noetic-libfranka
-```
-Gazebo physics simluator is also needed (http://gazebosim.org/). This can be installed and then run with:
-```bash
-curl -sSL http://get.gazebosim.org | sh
-gazebo
-```
-
-### Setup
-```bash
-# Clone the repository
-git clone --recurse-submodules https://github.com/amlansahoo07/pick-n-place.git
-cd pick-n-place
-git submodule update --init --recursive
-
-# Install dependencies
-rosdep install --from-paths src --ignore-src -r -y
-
-# Build the package
-catkin config --extend /opt/ros/${ROS_DISTRO} --cmake-args -DCMAKE_BUILD_TYPE=Release
-catkin build
-source devel/setup.bash
-```
-
-### Package Preparation:
-```bash
-git submodule add https://github.com/COMP0129-UCL/panda_moveit_config.git src/panda_moveit_config
-git submodule add https://github.com/COMP0129-UCL/panda_description.git src/panda_description
-git submodule add https://github.com/RPL-CS-UCL/realsense_gazebo_plugin.git src/realsense_gazebo_plugin 
-git submodule add https://github.com/RPL-CS-UCL/rpl_panda_with_rs.git src/rpl_panda_with_rs
-```
-
-### Running the Tasks
-```bash
-# Terminal 1: Launch the simulation
-roslaunch cw2_team_7 run_solution.launch
-
-# Terminal 2: Run tasks
-rosservice call /task 1  # Task 1: Pick and Place
-rosservice call /task 2  # Task 2: Shape Classification
-rosservice call /task 3  # Task 3: Manipulation in Cluttered Environment
-```
-
-## Troubleshooting & Debugging
-
-### Restart Gazebo Setup
-
-We have observed from 100+ test runs that sometimes if there's a slight failure in terms of movement planning or anything else, calling the tasks successively can result in multiple failures. Although this doesn't happen in most cases, if you start getting a string of failures one after another, please restart Gazebo completely and/or rebuild our package. This helps clear any residual states or errors, ensuring the system resets to a clean baseline. In our testing, the tasks execute precisely in the vast majority of runs.
-
-### Image Debugging
-Debug images (binary projections, orientation images) are stored in the `/src/images` folder. These images are for development purposes only and do not impact runtime functionality.
-
-### Additional RViz Setup
-A sample RViz config file is provided with already adjusted topic subscriptions and disable unnecessary visualisation topics. Refer to the config file in the repository for optimal settings.
-
-### C++17 Structured Bindings Warning
-Warning: Structured bindings are only available with -std=c++17 or -std=gnu++17. The code still compiles and works correctly because ROS Noetic's default compiler supports C++17 features even if the project is set to C++11/14.
-
-### Deprecated Parameter for MoveIt's Cartesian Planner
-The jump_threshold parameter is deprecated but the code compiles and operates correctly. The deprecation is due to improved, automatic methods for handling point cloud discontinuities that no longer require manual threshold tuning.
-
-## Licensing and Attribution
-
-LICENSE: [LICENSE.txt](LICENSE.txt)
-
-The codebase is developed by the UCL Robotics and AI teaching team and the project was part of a graded coursework for COMP0250.
-
-Authors: Eddie Edwards (eddie.edwards@ucl.ac.uk), Kefeng Huang, Bowie (Heiyin) Wong, Dimitrios Kanoulas, Luke Beddow, Denis Hadjivelichkov
-
-Description: This package forms the base ROS workspace for the module COMP0250 (formerly COMP0129): Robotic Sensing, Manipulation and Interaction.
-
-The solution/implementation has been worked upon by me (Amlan Sahoo), Lorenzo Uttini and Ziya Ruso.
-
-## Licensing and Attribution
-
-**License:** See [LICENSE.txt](LICENSE.txt) for full licensing details.
-
-This codebase was developed by the UCL Robotics and AI teaching team as part of the COMP0250 module (formerly COMP0129): *Robotic Sensing, Manipulation and Interaction*. The project was originally created as part of graded coursework.
-
-**Core Authors:**
-- Eddie Edwards (eddie.edwards@ucl.ac.uk)  
-- Kefeng Huang  
-- Bowie (Heiyin) Wong  
-- Dimitrios Kanoulas  
-- Luke Beddow  
-- Denis Hadjivelichkov
-
-**Contributors to the solution implementation (cw2_team_7):**
-- Amlan Sahoo  
-- Lorenzo Uttini  
-- Ziya Ruso
-
-This package provides the foundational ROS workspace for COMP0250 and has been further developed and implemented by the contributors listed above.
