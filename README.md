@@ -11,7 +11,7 @@ This project demonstrates advanced robotics capabilities through three progressi
 3. **Cluttered Environment Navigation:** Identification and retrieval of objects in complex scenes with obstacles.
 
 <div align="center">
-  <img src="figures/task3.png" alt="Robot manipulating objects" width="25%">
+  <img src="figures/task3.png" alt="Robot manipulating objects" width="45%">
 </div>
 
 ## Key Features
@@ -144,11 +144,11 @@ The system adapts to table heights (0–50mm), reliably classifies shapes, ident
   <p><em>The following figure represents an example of Task2 while the robot completes scanning the scene:</em></p>
   <div style="display: flex; justify-content: space-around; align-items: center;">
     <div style="flex: 1; text-align: center;">
-      <img src="figures/task2.png" alt="Task 1" style="width: 55%;">
+      <img src="figures/task2.png" alt="Task 1" style="width: 25%;">
       <p>Gazebo</p>
     </div>
     <div style="flex: 1; text-align: center;">
-      <img src="figures/task2_rviz.png" alt="Task 2" style="width: 65%;">
+      <img src="figures/task2_rviz.png" alt="Task 2" style="width: 30%;">
       <p>Rviz</p>
     </div>
   </div>
@@ -242,11 +242,11 @@ The system successfully:
   <p><em>The following figure represents an example of Task2 while the robot is nearing execution completion:</em></p>
   <div style="display: flex; justify-content: space-around; align-items: center;">
     <div style="flex: 1; text-align: center;">
-      <img src="figures/task3.png" alt="Task 1" style="width: 65%;">
+      <img src="figures/task3.png" alt="Task 1" style="width: 25%;">
       <p>Gazebo</p>
     </div>
     <div style="flex: 1; text-align: center;">
-      <img src="figures/task3_rviz.png" alt="Task 2" style="width: 65%;">
+      <img src="figures/task3_rviz.png" alt="Task 2" style="width: 30%;">
       <p>Rviz</p>
     </div>
   </div>
