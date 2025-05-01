@@ -374,17 +374,6 @@ Warning: Structured bindings are only available with -std=c++17 or -std=gnu++17.
 ### Deprecated Parameter for MoveIt's Cartesian Planner
 The jump_threshold parameter is deprecated but the code compiles and operates correctly. The deprecation is due to improved, automatic methods for handling point cloud discontinuities that no longer require manual threshold tuning.
 
-## Licensing and Attribution
-
-LICENSE: [LICENSE.txt](LICENSE.txt)
-
-The codebase is developed by the UCL Robotics and AI teaching team and the project was part of a graded coursework for COMP0250.
-
-Authors: Eddie Edwards (eddie.edwards@ucl.ac.uk), Kefeng Huang, Bowie (Heiyin) Wong, Dimitrios Kanoulas, Luke Beddow, Denis Hadjivelichkov
-
-Description: This package forms the base ROS workspace for the module COMP0250 (formerly COMP0129): Robotic Sensing, Manipulation and Interaction.
-
-The solution/implementation has been worked upon by me (Amlan Sahoo), Lorenzo Uttini and Ziya Ruso.
 
 ## Licensing and Attribution
 
